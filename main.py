@@ -1,7 +1,6 @@
 import pycurl
 import os
 import re
-from io import BytesIO
 from sys import stderr as STREAM
 
 kb = 1024
@@ -25,15 +24,13 @@ def status(download_t, download_d, upload_t, upload_d):
 def scarica_episodio(link_episodio):
 
     curl = pycurl.Curl()
-    buffer = BytesIO()
 
     split = link_episodio.split("/")
     directory = split[-2]
     directory = directory[:-3]
 
     directory = ("_").join(re.split("(?<=.)(?=[A-Z])", directory))
-
-    episode_name = directory + "_Ep_" + ("_").join(split[-1].split("_")[-2:])
+    episode_name = split[-1]
 
     anime_path = os.path.join(anime_global_directory, directory)
     file_path = os.path.join(anime_path, episode_name)
@@ -42,7 +39,7 @@ def scarica_episodio(link_episodio):
         os.makedirs(anime_path)
 
     with open(file_path, "wb") as f:
-        curl.setopt(pycurl.URL, link)
+        curl.setopt(pycurl.URL, link_episodio)
         curl.setopt(pycurl.WRITEDATA, f)
         curl.setopt(pycurl.NOPROGRESS, False)
         curl.setopt(pycurl.XFERINFOFUNCTION, status)
@@ -51,6 +48,27 @@ def scarica_episodio(link_episodio):
         curl.close()
 
 
-link = input("Inserisci il link dell'episodio che vuoi scaricare: ")
+if __name__ == "__main__":
+    STREAM.write("Menu:\n1)Cerca anime\n2)Inserisci link anime")
+    selection = int(input("\nscegli: "))
 
-scarica_episodio(link)
+    match selection:
+        case 1:
+            nome_anime = input("Inserisci il nome dell'anime che vuoi cercare: ")
+            """
+            res = aw.find(nome_anime)
+            for item in res:
+                print(
+                    f"{res.index(item)}: {item['name']} - {item['episodes']} - {item['link']}"
+                )
+            anime_selection = int(input("Seleziona un anime: "))
+            selected_anime = aw.Anime(res[anime_selection]["link"])
+            episode_link = selected_anime.getEpisodes()[0].fileInfo()["url"]
+            scarica_episodio(episode_link)
+            """
+
+        case 2:
+            # TODO da implementare
+            episode_link = input("Inserisci il link dell'episodio da scaricare: ")
+            scarica_episodio(episode_link)
+    STREAM.flush()
