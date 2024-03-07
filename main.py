@@ -38,6 +38,8 @@ def scarica_episodio(link_episodio):
     if not os.path.exists(anime_path):
         os.makedirs(anime_path)
 
+    if os.path.exists(file_path):
+        return
     with open(file_path, "wb") as f:
         curl.setopt(pycurl.URL, link_episodio)
         curl.setopt(pycurl.WRITEDATA, f)
@@ -54,7 +56,18 @@ if __name__ == "__main__":
 
     match selection:
         case 1:
-            nome_anime = input("Inserisci il nome dell'anime che vuoi cercare: ")
+            # nome_anime = input("Inserisci il nome dell'anime che vuoi cercare: ")
+            server_host = input("inserisci il server su cui è hostato:")
+            server_host = server_host[:-1]
+            anime = server_host.split("/")[-1][:-3]
+            print(anime)
+            episodio_inizio = int(input("scegli episodio di inizio: "))
+            episodio_fine = int(input("scegli episodio di fine: "))
+            for i in range(episodio_inizio, episodio_fine + 1, 1):
+                episode_link = f"{server_host}/{anime}_Ep_{('0' + str(i))[-2:]}_ITA.mp4"
+                scarica_episodio(episode_link)
+                print(f"Episodio {i} scaricato!\n")
+
             """
             res = aw.find(nome_anime)
             for item in res:
