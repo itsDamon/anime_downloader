@@ -6,7 +6,7 @@ from sys import stderr as STREAM
 kb = 1024
 
 anime_global_directory = os.path.realpath("/home/damon/Video")
-
+parallel_downloads = 20
 print(anime_global_directory)
 
 
@@ -23,7 +23,6 @@ def status(download_t, download_d, upload_t, upload_d):
 
 def scarica_episodio(link_episodio):
 
-    curl = pycurl.Curl()
 
     split = link_episodio.split("/")
     directory = split[-2]
@@ -35,20 +34,15 @@ def scarica_episodio(link_episodio):
     anime_path = os.path.join(anime_global_directory, directory)
     file_path = os.path.join(anime_path, episode_name)
 
+    command = f"axel -a -n {parallel_downloads} {link_episodio} -o {file_path}"
+
     if not os.path.exists(anime_path):
         os.makedirs(anime_path)
 
     if os.path.exists(file_path):
         return
-    with open(file_path, "wb") as f:
-        curl.setopt(pycurl.URL, link_episodio)
-        curl.setopt(pycurl.WRITEDATA, f)
-        curl.setopt(pycurl.NOPROGRESS, False)
-        curl.setopt(pycurl.XFERINFOFUNCTION, status)
 
-        curl.perform()
-        curl.close()
-
+    os.system(command)
 
 if __name__ == "__main__":
     STREAM.write("Menu:\n1)Cerca anime\n2)Inserisci link anime")
