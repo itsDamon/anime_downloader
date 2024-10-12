@@ -66,6 +66,7 @@ if __name__ == "__main__":
             for i in range(episodio_inizio, episodio_fine + 1, 1):
                 episode_link = f"{server_host}/{anime}_Ep_{('0' + str(i))[-2:]}_ITA.mp4"
                 scarica_episodio(episode_link)
+                STREAM.flush()
                 print(f"Episodio {i} scaricato!\n")
 
             """
