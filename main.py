@@ -7,7 +7,7 @@ kb = 1024
 
 anime_global_directory = os.path.realpath("/home/damon/Video")
 parallel_downloads = 20
-print(anime_global_directory)
+print(anime_global_directory + "\n")
 
 
 def status(download_t, download_d, upload_t, upload_d):
