@@ -1,30 +1,18 @@
-import pycurl
+#!/home/damon/Video/anime_downloader/.env/bin/python
+
 import os
 import re
 from sys import stderr as STREAM
+import animeworld as aw
 
 kb = 1024
 
-anime_global_directory = os.path.realpath("/home/damon/Video")
+anime_global_directory = os.path.realpath("/home/damon/Sync")
 parallel_downloads = 20
 print(anime_global_directory + "\n")
 
-
-def status(download_t, download_d, upload_t, upload_d):
-    STREAM.write(
-        "Downloading: {}/{} kiB ({}%)\r".format(
-            str(int(download_d / kb)),
-            str(int(download_t / kb)),
-            str(int(download_d / download_t * 100) if download_t > 0 else 0),
-        )
-    )
-    STREAM.flush()
-
-
-def scarica_episodio(link_episodio):
-
-
-    split = link_episodio.split("/")
+def download_episode(episode_link):
+    split = episode_link.split("/")
     directory = split[-2]
     directory = directory[:-3]
 
@@ -34,7 +22,7 @@ def scarica_episodio(link_episodio):
     anime_path = os.path.join(anime_global_directory, directory)
     file_path = os.path.join(anime_path, episode_name)
 
-    command = f"axel -a -n {parallel_downloads} {link_episodio} -o {file_path}"
+    command = f"axel -a -n {parallel_downloads} {episode_link} -o {file_path}"
 
     if not os.path.exists(anime_path):
         os.makedirs(anime_path)
@@ -45,38 +33,56 @@ def scarica_episodio(link_episodio):
     os.system(command)
 
 if __name__ == "__main__":
-    STREAM.write("Menu:\n1)Cerca anime\n2)Inserisci link anime")
-    selection = int(input("\nscegli: "))
+    breakCondition = False
+    while not breakCondition:
+        STREAM.write("Menu:\n1)Search anime\n2)Enter anime link")
+        selection = int(input("\nChoose: "))
 
-    match selection:
-        case 1:
-            # nome_anime = input("Inserisci il nome dell'anime che vuoi cercare: ")
-            server_host = input("inserisci il server su cui è hostato:")
-            server_host = server_host[:-1]
-            anime = server_host.split("/")[-1][:-3]
-            print(anime)
-            episodio_inizio = int(input("scegli episodio di inizio: "))
-            episodio_fine = int(input("scegli episodio di fine: "))
-            for i in range(episodio_inizio, episodio_fine + 1, 1):
-                episode_link = f"{server_host}/{anime}_Ep_{('0' + str(i))[-2:]}_ITA.mp4"
-                scarica_episodio(episode_link)
-                STREAM.flush()
-                print(f"Episodio {i} scaricato!\n")
+        match selection:
+            case 1:
+                server_host = input("Enter the server where it's hosted:")
+                server_host = server_host[:-1]
+                anime = server_host.split("/")[-1][:-3]
+                print(anime)
+                start_episode = int(input("Choose starting episode: "))
+                end_episode = int(input("Choose ending episode: "))
+                for i in range(start_episode, end_episode + 1, 1):
+                    episode_link = f"{server_host}/{anime}_Ep_{('00' + str(i))[-3:]}_ITA.mp4"
+                    download_episode(episode_link)
+                    STREAM.flush()
+                    print(f"Episode {i} downloaded!\n")
+            case 2:
+                # TODO to be implemented
+                anime_name = input("Enter the name of the anime you want to search: ")
+                allAnime = aw.find(anime_name)
+                print("\n")
+                for i in range(len(allAnime)):
+                    print(str(i) + " - " + allAnime[i]["name"])
+                
+                print("\n0 - Return")
 
-            """
-            res = aw.find(nome_anime)
-            for item in res:
-                print(
-                    f"{res.index(item)}: {item['name']} - {item['episodes']} - {item['link']}"
-                )
-            anime_selection = int(input("Seleziona un anime: "))
-            selected_anime = aw.Anime(res[anime_selection]["link"])
-            episode_link = selected_anime.getEpisodes()[0].fileInfo()["url"]
-            scarica_episodio(episode_link)
-            """
+                select_anime_index = int(input("\nChoose: "))
+                if select_anime_index == 0:
+                    continue
+                selected_anime = aw.Anime(allAnime[select_anime_index]["link"])
+                anime_real_name = allAnime[select_anime_index]["name"].strip(" (ITA)")
 
-        case 2:
-            # TODO da implementare
-            episode_link = input("Inserisci il link dell'episodio da scaricare: ")
-            scarica_episodio(episode_link)
-    STREAM.flush()
+                anime_info = selected_anime.getInfo() 
+                print(anime_real_name,anime_info)
+                anime_episodes = selected_anime.getEpisodes()
+
+                start_episode = int(input("Choose starting episode: "))
+                end_episode = int(input("Choose ending episode: "))
+                for i in range(start_episode-1, end_episode, 1):
+                    episode_link = anime_episodes[i].links[0].fileLink()
+                    print(episode_link)
+                    download_episode(episode_link)
+                breakCondition = True
+
+            case 0:
+                breakCondition = True
+
+            case _:
+                continue
+
+        STREAM.flush()
